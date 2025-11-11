@@ -2,138 +2,135 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ズーム防止対策を維持 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>電卓</title>
     
     <!-- Tone.jsを読み込み：音の再生に使用します -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
-    <!-- 完全オフライン対応のため、全スタイルをインライン化 -->
+    <!-- 元のデザインのカスタムCSSを復元し、タッチアクションとスクロール防止を追加 -->
     <style>
-        /* 外部フォントの読み込みを削除し、システムフォントとフォールバックのみを使用 */
-
         :root {
-            /* 主要なカラーパレット */
-            --display-bg-start: #d3dfc7; /* ディスプレイ背景上部 */
-            --display-bg-end: #b6c3a2;   /* ディスプレイ背景下部 */
-            --calculator-bg: #404040; /* 電卓のベース背景 */
-            --dark-key-start: #5a5a5a; /* 暗いキーの上部 */
-            --dark-key-end: #3b3b3b;   /* 暗いキーの下部 */
-            --dark-key-border: #222222; /* 暗いキーのボーダー */
-            
-            /* 明るいグレーキーの色を定義 */
+            /* 主要なカラーパレット (元の値を維持) */
+            --display-bg-start: #d3dfc7; 
+            --display-bg-end: #b6c3a2;   
+            --calculator-bg: #404040; 
+            --dark-key-start: #5a5a5a; 
+            --dark-key-end: #3b3b3b;   
+            --dark-key-border: #222222; 
             --default-light-key-start: #919191; 
             --default-light-key-end: #616161;   
             --default-light-key-border: #444444; 
-
-            /* クリアキー（AC/C）の赤色を定義 */
-            --clear-key-start: #ff6347; /* Tomato */
-            --clear-key-end: #cc4c39;   /* Darker Tomato */
-            --clear-key-border: #993a2b; /* Darkest Red */
-
-            --op-key-start: #bf8d5e;    /* オペレーターキー（茶色）上部 */
-            --op-key-end: #8b5f3a;      /* オペレーターキー（茶色）下部 */
-            --op-key-border: #5a3c21;   /* オペレーターキー（茶色）ボーダー */
-            --equals-key-start: #ff8c00; /* イコールキー（オレンジ）上部 */
-            --equals-key-end: #cc5c00;   /* イコールキー（オレンジ）下部 */
-            --equals-key-border: #803b00; /* イコールキー（オレンジ）ボーダー */
-            --text-light: #ffffff;      /* 明るいテキスト色 */
-            --text-dark: #000000;       /* 暗いテキスト色 */
-            --text-red: #8b0000;        /* エラー表示用の暗い赤 */
-            --accent-color: #3b82f6;    /* アクセントカラー（青） */
+            --clear-key-start: #ff6347; 
+            --clear-key-end: #cc4c39;   
+            --clear-key-border: #993a2b; 
+            --op-key-start: #bf8d5e;    
+            --op-key-end: #8b5f3a;      
+            --op-key-border: #5a3c21;   
+            --equals-key-start: #ff8c00; 
+            --equals-key-end: #cc5c00;   
+            --equals-key-border: #803b00; 
+            --text-light: #ffffff;      
+            --text-dark: #000000;       
+            --text-red: #8b0000;        
+            --accent-color: #3b82f6;    
         }
 
-        /* <body> のレイアウトを flex, items-center, justify-center, min-h-screen, p-4 に相当させる */
         body {
-            /* システムフォントを優先し、Interの代わりに sans-serif を使用 */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: #e0e0e0; /* ボディの背景を明るいグレーに変更 */
+            background: #e0e0e0; 
             min-height: 100vh;
+            height: 100vh; /* 高さ固定 */
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem; /* p-4 に相当 */
+            padding: 1rem; 
             margin: 0;
-            box-sizing: border-box; /* パディングを幅に含める */
+            box-sizing: border-box; 
             position: relative;
+            user-select: none; 
+            -webkit-user-select: none; 
+            touch-action: manipulation; 
+            overflow: hidden; /* スクロールを禁止 (iPhone SE対策) */
         }
 
         #calculator {
             background-color: var(--calculator-bg);
-            border-radius: 20px; /* 全体の角を丸く */
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), /* 外側の影 */
-                        0 0 0 1px rgba(255, 255, 255, 0.1) inset; /* 内側の明るい線 */
-            padding: 20px; /* 内側の余白 */
+            border-radius: 20px; 
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), 
+                        0 0 0 1px rgba(255, 255, 255, 0.1) inset; 
+            /* パディングは元の20pxに近い値に戻す */
+            padding: 20px; 
             border: 1px solid rgba(0, 0, 0, 0.3);
             width: 100%; 
-            max-width: 350px; /* 電卓の一般的な最大幅 */
+            max-width: 350px; /* 最大幅は元の値を維持 */
             position: relative;
             margin-bottom: 0; 
         }
 
         #swipe-area {
-            border-radius: 8px; /* ディスプレイの角を丸く */
+            border-radius: 8px; 
             background: linear-gradient(180deg, var(--display-bg-start) 0%, var(--display-bg-end) 100%);
             padding: 15px 10px;
-            margin-bottom: 20px; /* ボタンとの間にスペース */
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3), /* 内側の影で奥まった感じ */
-                        inset 0 -2px 5px rgba(255, 255, 255, 0.1); /* 内側の明るい線 */
+            margin-bottom: 20px; /* 元の値を維持 */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3), 
+                        inset 0 -2px 5px rgba(255, 255, 255, 0.1); 
             border: 1px solid rgba(0, 0, 0, 0.2);
             position: relative;
-            overflow: hidden; /* 表示エリアからはみ出さないように */
+            overflow: hidden; 
             cursor: pointer; 
+            touch-action: pan-y; 
         }
         
         #previous-operation {
-            color: var(--text-dark); /* 暗いテキスト */
+            color: var(--text-dark); 
             opacity: 0.6;
-            font-size: 1.25rem; /* 少し小さく */
-            height: 1.5rem; /* h-6 に相当 */
+            font-size: 1.25rem; 
+            height: 1.5rem; 
             font-weight: 300;
-            text-align: right; /* text-right に相当 */
+            text-align: right; 
         }
 
         #current-display {
             min-height: 4rem;
-            display: flex; /* flexを維持 */
+            display: flex; 
             justify-content: flex-end;
             align-items: flex-end;
-            /* 数字専用フォントの代わりに monospace を使用 */
             font-family: monospace; 
-            font-weight: 300; /* 細めのフォント */
-            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4); /* 軽いテキストシャドウ */
-            text-align: right; /* text-right に相当 */
-            height: 4rem; /* h-16 (64px) に相当 */
-            overflow: hidden; /* overflow-hidden に相当 */
+            font-weight: 300; 
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4); 
+            text-align: right; 
+            height: 4rem; 
+            overflow: hidden; 
         }
 
-        /* サウンド設定ボタン */
         #sound-setting-button {
             position: absolute;
-            top: 20px; /* 電卓上部のパディングに合わせる */
-            left: 20px; /* 電卓左端のパディングに合わせる */
+            top: 20px; /* 元の値を維持 */
+            left: 20px; /* 元の値を維持 */
             background: none;
             border: none;
-            color: var(--default-light-key-start); /* キーボードのライトグレーに合わせる */
+            color: var(--default-light-key-start); 
             font-size: 1.5rem;
             cursor: pointer;
             padding: 0;
             margin: 0;
             transition: color 0.2s;
             z-index: 10;
+            touch-action: manipulation;
         }
 
         #sound-setting-button:hover {
             color: var(--text-light);
         }
 
-        /* スピーカーアイコンの見た目を調整 */
         .speaker-icon {
             display: inline-block;
             width: 20px;
             height: 20px;
             position: relative;
-            border-radius: 4px; /* 四隅を少し丸く */
+            border-radius: 4px; 
         }
         .speaker-icon svg {
             fill: currentColor;
@@ -143,69 +140,63 @@
 
         /* --- ボタン共通スタイル (六角形) --- */
         .calculator-grid {
-            display: grid; /* grid に相当 */
+            display: grid; 
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px; /* ボタン間の隙間を調整 */
-            /* ボタンの高さを指定し、レイアウトを安定させる */
-            grid-auto-rows: 70px; 
-            /* 六角形の配置を微調整 */
+            gap: 12px; /* 元の値を維持 */
+            grid-auto-rows: 70px; /* 元の値を維持 */
             padding-top: 5px;
         }
 
         .key {
-            /* border-radius: 50%; を削除し、clip-pathで六角形を作成 */
-            height: 70px; /* ボタンの高さ */
-            width: 100%; /* セルいっぱいに広げる */
-            max-width: 70px; /* 縦横比を調整するために最大幅を設定 */
-            margin: 0 auto; /* 中央寄せ */
+            height: 70px; /* 元の値を維持 */
+            width: 100%; 
+            max-width: 70px; 
+            margin: 0 auto; 
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 1.5rem;
             font-weight: 500;
-            color: var(--text-light); /* デフォルトのテキスト色 */
-            text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6); /* テキストの影 */
+            color: var(--text-light); 
+            text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6); 
             
             /* 六角形クリップパス: 頂点が上下に来る標準的な六角形 */
             clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); 
 
-            box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.1), /* 内側のハイライト */
-                        inset 0 -2px 5px rgba(0, 0, 0, 0.4),   /* 内側の影 */
-                        0 5px 10px rgba(0, 0, 0, 0.3);         /* 外側の影 */
-            border: 1px solid; /* ボーダーは各キータイプで設定 */
-            transition: all 0.05s ease-out; /* 押下時のアニメーション */
-            position: relative; /* 疑似要素のために必要 */
+            box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.1), 
+                        inset 0 -2px 5px rgba(0, 0, 0, 0.4),   
+                        0 5px 10px rgba(0, 0, 0, 0.3);         
+            border: 1px solid; 
+            transition: all 0.05s ease-out; 
+            position: relative; 
             cursor: pointer;
             user-select: none;
+            touch-action: manipulation; /* ズーム防止 */
         }
 
-        /* 押下時のスタイル */
         .key:active {
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), /* 影を反転 */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), 
                         inset 0 -2px 5px rgba(255, 255, 255, 0.1),
-                        0 2px 5px rgba(0, 0, 0, 0.2); /* 外側の影を小さく */
-            transform: translateY(1px); /* 少し沈む */
+                        0 2px 5px rgba(0, 0, 0, 0.2); 
+            transform: translateY(1px); 
         }
         
-        /* キーのタイプ別カラーリング */
         .key[data-type="number"], .key[data-type="number"][data-value="."] {
             background: linear-gradient(180deg, var(--dark-key-start) 0%, var(--dark-key-end) 100%);
             border-color: var(--dark-key-border);
         }
         
-        /* 0キー（横長六角形） */
         .key[data-type="number"][data-value="0"] {
             grid-column: span 2;
             width: 100%; 
             max-width: none; 
-            height: 70px;
+            height: 70px; /* 元の値を維持 */
             clip-path: polygon(5% 0%, 95% 0%, 100% 50%, 95% 100%, 5% 100%, 0% 50%);
             justify-content: flex-start; 
             padding-left: 25px; 
             margin: 0; 
         }
 
-        /* 明るいグレーのキー (デフォルトのライトキー: +/-, %) */
         .key.light-key {
             background: linear-gradient(180deg, var(--default-light-key-start) 0%, var(--default-light-key-end) 100%);
             border-color: var(--default-light-key-border);
@@ -213,46 +204,40 @@
             text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4); 
         }
 
-        /* AC/Cキー */
-        #clear-key {
-            background: linear-gradient(180deg, var(--clear-key-start) 0%, var(--clear-key-end) 100%);
-            border-color: var(--clear-key-border);
-            color: var(--text-light); 
-            text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6); 
-        }
-
-        /* 茶色のオペレーターキー */
         .key.op-key {
             background: linear-gradient(180deg, var(--op-key-start) 0%, var(--op-key-end) 100%);
             border-color: var(--op-key-border);
         }
 
-        /* オレンジのイコールキー */
         .key.equals-key {
             background: linear-gradient(180deg, var(--equals-key-start) 0%, var(--equals-key-end) 100%);
             border-color: var(--equals-key-border);
         }
 
-        /* ディスプレイのエラー表示 */
         #current-value-span.error-text {
             color: var(--text-red); 
             text-shadow: none;
         }
 
-        /* スマートフォン向け縦向きでの幅調整 */
+        /* 画面サイズが小さい場合の調整は、前回の値を破棄し、元々の値に戻す */
         @media (max-width: 640px) {
             #calculator {
                 max-width: 350px; 
                 margin-left: auto;
                 margin-right: auto;
+                padding: 15px; /* 全体パディングを少しだけ小さくしておく（念のため） */
+            }
+            .calculator-grid {
+                gap: 10px; /* ギャップを少しだけ小さくしておく（念のため） */
+                grid-auto-rows: 65px; /* ボタンの高さを少しだけ小さくしておく（念のため） */
             }
             .key {
-                height: 60px; 
-                max-width: 60px; 
+                height: 65px; 
+                max-width: 65px; 
                 font-size: 1.3rem;
             }
             .key[data-type="number"][data-value="0"] {
-                height: 60px; 
+                height: 65px; 
                 padding-left: 20px;
             }
         }
@@ -320,13 +305,13 @@
             transition: background-color 0.2s, transform 0.1s;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             min-width: 100px;
+            touch-action: manipulation;
         }
 
         .modal-button:active {
             transform: scale(0.98);
         }
 
-        /* 許可ボタン (青) - 初期状態で有効 */
         #allow-sound {
             background-color: var(--accent-color);
             color: white;
@@ -335,7 +320,6 @@
             background-color: #2563eb;
         }
 
-        /* 拒否ボタン (グレー) */
         #deny-sound {
             background-color: #e5e7eb;
             color: var(--text-dark);
@@ -428,20 +412,20 @@
         const soundSettingButton = document.getElementById('sound-setting-button');
         const speakerIcon = document.getElementById('speaker-icon');
         const soundModal = document.getElementById('sound-modal');
-        const allowSoundButton = document.getElementById('allow-sound'); // 追加
-        const denySoundButton = document.getElementById('deny-sound');   // 追加
+        const allowSoundButton = document.getElementById('allow-sound'); 
+        const denySoundButton = document.getElementById('deny-sound');   
 
         // 0キーのテキストを設定
         if (zeroKey) {
             zeroKey.textContent = '0';
         }
 
-        // グローバルなサウンド状態 (初期値は常に有効に変更)
+        // グローバルなサウンド状態 (初期値は常に有効)
         let isSoundEnabled = true; 
 
         // --- Tone.js サウンド設定 ---
         const synth = new Tone.Synth().toDestination();
-        synth.volume.value = -10; // 音量を少し下げる
+        synth.volume.value = -10; 
         
         // スピーカーアイコンのSVGパス
         const speakerOnPath = '<path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 5.5C14.5 3.84315 15.8431 2.5 17.5 2.5C19.1569 2.5 20.5 3.84315 20.5 5.5C20.5 7.15685 19.1569 8.5 17.5 8.5C15.8431 8.5 14.5 7.15685 14.5 5.5ZM2 10.5V13.5H5.09063L10 18.5V5.5L5.09063 10.5H2Z"/>';
@@ -472,18 +456,15 @@
 
         // サウンド再生関数
         function playSound(note) {
-            if (!isSoundEnabled) return; // サウンドが無効な場合は何もしない
+            if (!isSoundEnabled) return; 
 
-            // ブラウザの制限を回避するため、初回操作時にAudioContextを開始
             if (Tone.context.state !== 'running') {
                 Tone.start().then(() => {
-                    // 再生
-                    const duration = 0.05; // 非常に短い音
+                    const duration = 0.05; 
                     synth.triggerAttackRelease(note, duration);
                 });
             } else {
-                // 再生
-                const duration = 0.05; // 非常に短い音
+                const duration = 0.05; 
                 synth.triggerAttackRelease(note, duration);
             }
         }
@@ -491,30 +472,20 @@
 
 
         // --- サウンド設定とモーダルロジック ---
-
-        /**
-         * サウンドの状態を更新し、アイコンを切り替えます。
-         * @param {boolean} enable - trueで有効、falseで無効
-         */
         function setSoundEnabled(enable) {
             isSoundEnabled = enable;
             updateSpeakerIcon();
         }
 
-        /**
-         * スピーカーアイコンを現在の状態に基づいて更新します。
-         */
         function updateSpeakerIcon() {
             speakerIcon.innerHTML = isSoundEnabled ? 
                 `<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">${speakerOnPath}</svg>` : 
                 `<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">${speakerOffPath}</svg>`;
         }
 
-        // モーダルボタンのイベントリスナー設定
         allowSoundButton.addEventListener('click', () => {
             setSoundEnabled(true);
             soundModal.classList.remove('open');
-            // Tone.jsをスタート
             if (Tone.context.state !== 'running') {
                 Tone.start();
             }
@@ -525,9 +496,7 @@
             soundModal.classList.remove('open');
         });
 
-        // サウンド設定ボタン（トグル）のイベントリスナー
         soundSettingButton.addEventListener('click', () => {
-            // トグルする前に、音を有効にする場合はTone.jsを起動する必要がある
             if (!isSoundEnabled) {
                 if (Tone.context.state !== 'running') {
                     Tone.start();
@@ -536,18 +505,16 @@
             setSoundEnabled(!isSoundEnabled);
         });
 
-        // --- 電卓ロジック (変更なし) ---
+        // --- 電卓ロジック ---
 
-        // 電卓の状態管理オブジェクト (初期値)
         let calculatorState = {
-            currentValue: '0',        // 現在入力されている値 (文字列)
-            previousValue: null,      // 以前の値 (数値)
-            operation: null,          // 選択された演算子 (文字列 '+', '-', '*', '/', '%')
-            waitingForNewValue: true, // 新しい値の入力を待っているか
-            isError: false,           // エラー状態か
+            currentValue: '0',        
+            previousValue: null,      
+            operation: null,          
+            waitingForNewValue: true, 
+            isError: false,           
         };
 
-        // 演算子記号をディスプレイ表示用に変換するマップ
         const operationMap = {
             '+': '+',
             '-': '−',
@@ -556,10 +523,6 @@
             '%': '%',
         };
 
-        /**
-         * 現在の値の桁数に応じてフォントサイズを調整します。
-         * @param {string} value - 現在の値（カンマなし）
-         */
         function adjustFontSize(value) {
             const length = value.replace(/[-.]/g, '').length; 
             let fontSize;
@@ -575,11 +538,6 @@
             currentValueSpan.style.fontSize = fontSize;
         }
 
-        /**
-         * 文字列化された数値にカンマを追加します。
-         * @param {string} valueStr - カンマを追加する値の文字列
-         * @returns {string} カンマ付きのフォーマットされた文字列
-         */
         function formatNumberWithCommas(valueStr) {
             if (!valueStr || calculatorState.isError) return valueStr;
             const isNegative = valueStr.startsWith('-');
@@ -591,7 +549,6 @@
             return (isNegative ? '-' : '') + formattedIntegerPart + fractionalPart;
         }
 
-        // ディスプレイを更新する関数
         function updateDisplay() {
             if (calculatorState.isError) {
                 currentValueSpan.textContent = 'エラー';
@@ -625,10 +582,6 @@
             }
         }
 
-        /**
-         * 数字キーまたは小数点キーの処理
-         * @param {string} digit 入力された数字または小数点
-         */
         function inputDigit(digit) {
             if (calculatorState.isError) return;
 
@@ -651,10 +604,6 @@
             updateDisplay();
         }
 
-        /**
-         * 演算子キーの処理
-         * @param {string} nextOperation 次に適用される演算子
-         */
         function handleOperator(nextOperation) {
             if (calculatorState.isError) return;
 
@@ -681,9 +630,6 @@
             updateDisplay();
         }
 
-        /**
-         * イコールキーの処理
-         */
         function handleEquals() {
             if (calculatorState.isError || calculatorState.previousValue === null || calculatorState.operation === null) return;
 
@@ -702,9 +648,6 @@
             updateDisplay();
         }
 
-        /**
-         * 実際の計算を実行します。
-         */
         function calculate(prev, current, operation) {
             const precision = 10000000000; 
             prev = Math.round(prev * precision) / precision;
@@ -734,9 +677,6 @@
             return Math.round(result * precision) / precision;
         }
         
-        /**
-         * AC/Cキーの処理
-         */
         function clear() {
             if (calculatorState.isError) {
                 fullClear();
@@ -748,17 +688,11 @@
             updateDisplay();
         }
 
-        /**
-         * C (カレントクリア) のロジック
-         */
         function currentClear() {
             calculatorState.currentValue = '0';
             calculatorState.waitingForNewValue = true; 
         }
 
-        /**
-         * AC (オールクリア) のロジック
-         */
         function fullClear() {
             calculatorState = {
                 currentValue: '0',
@@ -769,9 +703,6 @@
             };
         }
 
-        /**
-         * 符号変更キー（+/-）の処理
-         */
         function changeSign() {
             if (calculatorState.isError) return;
             
@@ -783,9 +714,6 @@
             updateDisplay();
         }
 
-        /**
-         * 一文字削除（バックスペース）のロジック
-         */
         function backspace() {
             if (calculatorState.isError || calculatorState.waitingForNewValue) return;
 
@@ -822,7 +750,7 @@
                 event.target.classList.remove('active');
             }, 100); 
             
-            // どのキーが押されたかに基づいて音を決定し再生
+            // サウンドの決定と再生
             let noteToPlay = null;
             if (type === 'number') {
                 noteToPlay = noteMap[value];
@@ -865,13 +793,37 @@
         const SWIPE_THRESHOLD = 50; 
 
         swipeArea.addEventListener('touchstart', e => {
+            // ズーム防止のために2本指以上の操作を無視する
+            if (e.touches.length > 1) {
+                e.preventDefault(); 
+                return;
+            }
             touchstartX = e.changedTouches[0].screenX;
-        }, false);
+        }, { passive: false });
 
         swipeArea.addEventListener('touchend', e => {
+            // ズーム防止のために2本指以上の操作を無視する
+            if (e.changedTouches.length > 1) {
+                e.preventDefault();
+                return;
+            }
             touchendX = e.changedTouches[0].screenX;
             handleGesture();
-        }, false);
+        }, { passive: false });
+        
+        // 全体でのタッチ操作によるズーム防止
+        document.body.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
 
         function handleGesture() {
             if (touchendX < touchstartX && (touchstartX - touchendX) > SWIPE_THRESHOLD) {
@@ -929,12 +881,7 @@
         // 4. 初期表示の更新とモーダル表示 (ロード時に必ず表示)
         window.onload = () => {
             updateDisplay();
-            // サウンドの初期状態は true なので、アイコンを更新
             updateSpeakerIcon(); 
-            
-            // 初回ロード時、ユーザー操作なしでTone.jsを起動すると警告が出るため、
-            // ユーザー操作 (ボタンクリック) があれば、初回操作時に起動するロジックはそのまま残す。
-            // ただし、有効状態のまま起動するので、トグル操作でも起動を試みる。
         };
     </script>
 </body>
