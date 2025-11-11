@@ -836,12 +836,16 @@
 
 
         function handleGesture() {
-            if (touchendX < touchstartX && (touchstartX - touchendX) > SWIPE_THRESHOLD) {
+            // 左スワイプ (右から左) または 右スワイプ (左から右) の両方で動作させる
+            const deltaX = touchendX - touchstartX;
+            
+            // スワイプの絶対値が閾値を超えているか確認
+            if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
                 backspace();
                 playSound(noteMap['clear']);
             }
         }
-        
+
         // 3. キーボードイベント (PC操作)
         document.addEventListener('keydown', (e) => {
             if (calculatorState.isError) {
