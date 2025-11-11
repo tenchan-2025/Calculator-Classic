@@ -2,14 +2,25 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <!-- ズーム防止対策を維持 --><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- ズーム防止対策を維持 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>電卓</title>
     
-    <!-- ここにファビコン/アイコンのlinkタグを追加 --><link rel="icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png" type="image/png">
+    <!-- PWA / iOSホーム画面への追加設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="電卓">
     
-    <!-- Tone.jsを読み込み：音の再生に使用します --><script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- アイコン設定 -->
+    <link rel="icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png">
+    
+    <!-- Tone.jsを読み込み：音の再生に使用します -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
-    <!-- 元のデザインのカスタムCSSを復元し、タッチアクションとスクロール防止を追加 --><style>
+    <!-- 元のデザインのカスタムCSSを復元し、タッチアクションとスクロール防止を追加 -->
+    <style>
         :root {
             /* 主要なカラーパレット (元の値を維持) */
             --display-bg-start: #d3dfc7; 
@@ -329,62 +340,77 @@
     </style>
 </head>
 <body>
-    <!-- サウンド設定モーダル --><div id="sound-modal" class="modal-overlay open">
+    
+    <!-- サウンド設定モーダル -->
+    <div id="sound-modal" class="modal-overlay open">
         <div class="modal-content">
             <h2>サウンドを有効にしますか？</h2>
             <p>ボタンを押したときに、フィードバックとしてクリック音を鳴らします。</p>
             <div class="modal-buttons">
-                <!-- 「無効にする」ボタンを左に --><button id="deny-sound" class="modal-button">無効にする</button>
-                <!-- 「有効にする」ボタンを右に (デフォルト選択) --><button id="allow-sound" class="modal-button">有効にする</button>
+                <!-- サウンド無効ボタン -->
+                <button id="deny-sound" class="modal-button">無効にする</button>
+                <!-- サウンド有効ボタン -->
+                <button id="allow-sound" class="modal-button">有効にする</button>
             </div>
         </div>
     </div>
 
     <div id="calculator">
-        <!-- サウンド設定トグルボタン --><button id="sound-setting-button">
-            <!-- SVGはスピーカーアイコン（音あり/音なしで切り替わる） --><span id="speaker-icon" class="speaker-icon">
+        
+        <!-- サウンド設定ボタン -->
+        <button id="sound-setting-button">
+            <!-- スピーカーアイコンSVG -->
+            <span id="speaker-icon" class="speaker-icon">
                 <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <!-- 初期状態は音あり (JSで設定) --><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 5.5C14.5 3.84315 15.8431 2.5 17.5 2.5C19.1569 2.5 20.5 3.84315 20.5 5.5C20.5 7.15685 19.1569 8.5 17.5 8.5C15.8431 8.5 14.5 7.15685 14.5 5.5ZM2 10.5V13.5H5.09063L10 18.5V5.5L5.09063 10.5H2Z"/>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 5.5C14.5 3.84315 15.8431 2.5 17.5 2.5C19.1569 2.5 20.5 3.84315 20.5 5.5C20.5 7.15685 19.1569 8.5 17.5 8.5C15.8431 8.5 14.5 7.15685 14.5 5.5ZM2 10.5V13.5H5.09063L10 18.5V5.5L5.09063 10.5H2Z"/>
                 </svg>
             </span>
         </button>
 
-        <!-- ディスプレイ --><div id="swipe-area"> 
+        <!-- ディスプレイ部分 (スワイプエリアを含む) -->
+        <div id="swipe-area"> 
             <div id="previous-operation"></div>
             <div id="current-display">
                 <span id="current-value-span">0</span>
             </div>
         </div>
 
-        <!-- ボタンコンテナ (Grid) --><div class="calculator-grid">
+        <!-- ボタングリッド -->
+        <div class="calculator-grid">
             
-            <!-- 1行目: AC/C (赤), +/-, % (グレー), ÷ (茶) --><button id="clear-key" class="key light-key" data-type="clear">AC</button>
+            <!-- 1列目: AC, +/-, %, ÷ -->
+            <button id="clear-key" class="key light-key" data-type="clear">AC</button>
             <button class="key light-key" data-type="sign">+/-</button>
             <button class="key light-key" data-type="operator" data-value="%">%</button>
             <button class="key op-key" data-type="operator" data-value="/">÷</button>
 
-            <!-- 2行目: 7, 8, 9, × --><button class="key dark-key" data-type="number" data-value="7">7</button>
+            <!-- 2列目: 7, 8, 9, × -->
+            <button class="key dark-key" data-type="number" data-value="7">7</button>
             <button class="key dark-key" data-type="number" data-value="8">8</button>
             <button class="key dark-key" data-type="number" data-value="9">9</button>
             <button class="key op-key" data-type="operator" data-value="*">×</button>
 
-            <!-- 3行目: 4, 5, 6, - --><button class="key dark-key" data-type="number" data-value="4">4</button>
+            <!-- 3列目: 4, 5, 6, - -->
+            <button class="key dark-key" data-type="number" data-value="4">4</button>
             <button class="key dark-key" data-type="number" data-value="5">5</button>
             <button class="key dark-key" data-type="number" data-value="6">6</button>
             <button class="key op-key" data-type="operator" data-value="-">-</button>
 
-            <!-- 4行目: 1, 2, 3, + --><button class="key dark-key" data-type="number" data-value="1">1</button>
+            <!-- 4列目: 1, 2, 3, + -->
+            <button class="key dark-key" data-type="number" data-value="1">1</button>
             <button class="key dark-key" data-type="number" data-value="2">2</button>
             <button class="key dark-key" data-type="number" data-value="3">3</button>
             <button class="key op-key" data-type="operator" data-value="+">+</button>
 
-            <!-- 5行目: 0 (2スパン), ., = --><!-- 0キーのテキストはJavaScriptで設定されるため、ここでは空にする --><button class="key dark-key" data-type="number" data-value="0"></button> 
+            <!-- 5列目: 0 (2マス幅), ., = -->
+            <button class="key dark-key" data-type="number" data-value="0"></button> 
             <button class="key dark-key" data-type="number" data-value="." data-value=".">.</button>
             <button class="key equals-key" data-type="equals">=</button> 
         </div>
     </div>
 
-    <!-- JavaScriptロジック --><script>
+    <!-- スクリプト -->
+    <script>
         // DOM要素の取得
         const currentDisplay = document.getElementById('current-display');
         const currentValueSpan = document.getElementById('current-value-span');
