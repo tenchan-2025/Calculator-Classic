@@ -16,30 +16,27 @@
     <link rel="icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png">
 
-    <!-- CSS変数 (var) を使用せず、固定のカラーコードを使用 -->
+    <!-- パフォーマンス優先のスタイルに簡素化 -->
     <style>
-        /* --- 固定カラーコード定義 (元のデザインから) --- */
+        /* --- 固定カラーコード定義 (単色でパフォーマンス優先) --- */
         /* Display */
-        .display-bg-start { background-color: #d3dfc7; }
-        .display-bg-end { background-color: #b6c3a2; }
+        .display-bg { background-color: #c0cfa8; } /* グラデーションを単色に */
         .calculator-bg { background-color: #404040; }
         /* Dark Keys */
-        .dark-key-start { background-color: #5a5a5a; }
-        .dark-key-end { background-color: #3b3b3b; }
+        .dark-key-color { background-color: #4a4a4a; }
         .dark-key-border { border-color: #222222; }
-        /* Light Keys (AC, +/-, %) */
-        .default-light-key-start { background-color: #919191; }
-        .default-light-key-end { background-color: #616161; }
-        .default-light-key-border { border-color: #444444; }
+        /* Light Keys (+/-, %) */
+        .light-key-color { background-color: #7a7a7a; }
+        .light-key-border { border-color: #444444; }
+        /* AC/C Key (赤) */
+        .red-key-color { background-color: #c95d5d; } /* 明るい赤 */
+        .red-key-border { border-color: #923a3a; }
         /* Operator Keys (÷, ×, -, +) */
-        .op-key-start { background-color: #bf8d5e; }
-        .op-key-end { background-color: #8b5f3a; }
+        .op-key-color { background-color: #a47047; }
         .op-key-border { border-color: #5a3c21; }
         /* Equals Key */
-        .equals-key-start { background-color: #ff8c00; }
-        .equals-key-end { background-color: #cc5c00; }
+        .equals-key-color { background-color: #cc6d00; }
         .equals-key-border { border-color: #803b00; }
-        /* Clear Key (AC/C) - Replaced with default light key colors for simplicity and compatibility */
         
         /* Text Colors */
         .text-light { color: #ffffff; }
@@ -49,14 +46,12 @@
         /* --- 基本レイアウトと互換性のための修正 --- */
 
         body {
-            /* 古いiOSで動作するフォントを選択 */
             font-family: Helvetica, Arial, sans-serif; 
             background: #e0e0e0; 
             min-height: 100vh;
             height: 100vh;
-            /* display: flex を使用せず、従来のブロックレベル要素で中央配置 */
             display: block; 
-            text-align: center; /* calcを中央に配置する代替手段 */
+            text-align: center; 
             padding: 1rem; 
             margin: 0;
             box-sizing: border-box; 
@@ -66,41 +61,37 @@
         }
 
         #calculator {
-            /* display: block と margin: auto で中央寄せ */
             background-color: #404040;
             border-radius: 20px; 
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5), 
-                        inset 0 0 0 1px rgba(255, 255, 255, 0.1); 
+            /* シャドウを簡素化 */
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5); 
             padding: 20px; 
             border: 1px solid rgba(0, 0, 0, 0.3);
             width: 100%; 
             max-width: 350px; 
-            margin: 0 auto; /* 中央配置 */
+            margin: 0 auto; 
             position: relative;
-            /* iOS 6で中央配置するために、display:blockにする */
             display: block; 
         }
 
         #swipe-area {
             border-radius: 8px; 
-            /* グラデーションは互換性のためにベンダープレフィックスを使用 */
-            background: -webkit-linear-gradient(top, #d3dfc7 0%, #b6c3a2 100%);
-            background: linear-gradient(180deg, #d3dfc7 0%, #b6c3a2 100%);
+            /* グラデーションを単色に */
+            background-color: #c0cfa8; 
             padding: 15px 10px;
             margin-bottom: 20px; 
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3), 
-                        inset 0 -2px 5px rgba(255, 255, 255, 0.1); 
+            /* シャドウを簡素化 */
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); 
             border: 1px solid rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden; 
             cursor: pointer; 
-            /* touch-action: pan-y は古いブラウザでは無視されるが、残しておく */
         }
         
         #previous-operation {
             color: #000000; 
             opacity: 0.6;
-            font-size: 1.25em; /* remをemに置換 */
+            font-size: 1.25em; 
             height: 1.5em; 
             font-weight: 300;
             text-align: right; 
@@ -108,7 +99,6 @@
 
         #current-display {
             min-height: 4em;
-            /* display: flex を使用しない */
             display: block; 
             font-family: monospace; 
             font-weight: 300; 
@@ -116,52 +106,42 @@
             text-align: right; 
             height: 4em; 
             overflow: hidden; 
-            line-height: 4em; /* 垂直方向の中央配置の代替 */
+            line-height: 4em; 
         }
-
-        /* サウンドボタンは削除したため、関連CSSも削除 */
 
         /* --- ボタン共通スタイル (従来のブロックモデル) --- */
         .calculator-grid {
-            /* display: grid を使用しない */
             display: block; 
             width: 100%;
             padding-top: 5px;
-            /* ボタン間のギャップは、マージンで調整 */
         }
 
         .key {
-            /* キーの基本サイズ */
             width: 70px; 
             height: 70px; 
-            /* 4列レイアウトのための float / inline-block */
             float: left; 
-            margin: 6px; /* 12pxギャップの代替 */
+            margin: 6px; 
             display: block; 
             
-            /* 角丸の四角形（六角形の代替） */
             border-radius: 12px; 
-            /* clip-path: none; */ /* 元の六角形を無効化 */
-
             text-align: center;
-            line-height: 70px; /* 垂直方向の中央配置 */
+            line-height: 70px; 
             font-size: 1.5em;
             font-weight: 500;
             color: #ffffff; 
             text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6); 
             
-            /* シャドウは固定値とベンダープレフィックスを使用 */
-            box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.1), 
-                        inset 0 -2px 5px rgba(0, 0, 0, 0.4),   
-                        0 5px 10px rgba(0, 0, 0, 0.3);         
+            /* シャドウを極限まで簡素化 */
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);         
             border: 1px solid; 
-            -webkit-transition: all 0.05s ease-out; /* ベンダープレフィックスを追加 */
-            transition: all 0.05s ease-out; 
+            /* トランジションを削除して反応速度を最速化 */
+            -webkit-transition: none; 
+            transition: none; 
             position: relative; 
             cursor: pointer;
             -webkit-user-select: none;
             user-select: none;
-            -webkit-box-sizing: border-box; /* 互換性のために追加 */
+            -webkit-box-sizing: border-box; 
             box-sizing: border-box; 
         }
 
@@ -171,35 +151,31 @@
         .key[data-value="0"] { clear: left; }
         
         .key:active {
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4), 
-                        inset 0 -2px 5px rgba(255, 255, 255, 0.1),
-                        0 2px 5px rgba(0, 0, 0, 0.2); 
-            -webkit-transform: translateY(1px); /* ベンダープレフィックスを追加 */
+            /* 押下時のシャドウも簡素化 */
+            box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.4); 
+            -webkit-transform: translateY(1px); 
             transform: translateY(1px); 
         }
         
-        /* --- キーの背景色設定 (グラデーションと固定色) --- */
+        /* --- キーの背景色設定 (単色と簡素化されたボーダー) --- */
         
         /* Dark Keys (Number and .) */
         .key[data-type="number"] {
-            background: -webkit-linear-gradient(top, #5a5a5a 0%, #3b3b3b 100%);
-            background: linear-gradient(180deg, #5a5a5a 0%, #3b3b3b 100%);
+            background-color: #4a4a4a;
             border-color: #222222;
         }
 
-        /* Light Keys (AC, +/-, %) */
+        /* Light Keys (+/-, %) */
         .key.light-key {
-            background: -webkit-linear-gradient(top, #919191 0%, #616161 100%);
-            background: linear-gradient(180deg, #919191 0%, #616161 100%);
+            background-color: #7a7a7a;
             border-color: #444444;
             color: #000000; 
             text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4); 
         }
         
-        /* --- AC/C (赤色キー) の追加定義 --- */
+        /* AC/C (赤色キー) */
         .key.red-key {
-            background: -webkit-linear-gradient(top, #e47272 0%, #bd4f4f 100%);
-            background: linear-gradient(180deg, #e47272 0%, #bd4f4f 100%);
+            background-color: #c95d5d;
             border-color: #923a3a;
             color: #ffffff; 
             text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6);
@@ -207,22 +183,19 @@
 
         /* Operator Keys */
         .key.op-key {
-            background: -webkit-linear-gradient(top, #bf8d5e 0%, #8b5f3a 100%);
-            background: linear-gradient(180deg, #bf8d5e 0%, #8b5f3a 100%);
+            background-color: #a47047;
             border-color: #5a3c21;
         }
 
         /* Equals Key */
         .key.equals-key {
-            background: -webkit-linear-gradient(top, #ff8c00 0%, #cc5c00 100%);
-            background: linear-gradient(180deg, #ff8c00 0%, #cc5c00 100%);
+            background-color: #cc6d00;
             border-color: #803b00;
         }
         
         /* Zero Key - 2列幅の代替 */
         .key[data-value="0"] {
-            /* width: 2マス分 + マージン分を引く */
-            width: 152px; /* (70px * 2) + 12px (マージン) */
+            width: 152px; 
             text-align: left;
             padding-left: 25px; 
         }
@@ -245,7 +218,7 @@
                 line-height: 60px;
             }
             .key[data-value="0"] {
-                width: 130px; /* (60px * 2) + 10px (マージン) */
+                width: 130px; 
                 padding-left: 20px;
             }
             #current-display {
@@ -260,7 +233,8 @@
     <div id="calculator">
         
         <!-- ディスプレイ部分 (スワイプエリアを含む) -->
-        <div id="swipe-area" class="display-bg-start"> 
+        <!-- display-bg-start/end を display-bg に変更 -->
+        <div id="swipe-area" class="display-bg"> 
             <div id="previous-operation" class="text-dark"></div>
             <div id="current-display" class="text-dark">
                 <!-- フォントサイズはJSで制御 -->
@@ -272,7 +246,6 @@
         <div class="calculator-grid">
             
             <!-- 1列目: AC, +/-, %, ÷ -->
-            <!-- light-key から red-key に変更 -->
             <button id="clear-key" class="key red-key" data-type="clear">AC</button>
             <button class="key light-key" data-type="sign">+/-</button>
             <button class="key light-key" data-type="operator" data-value="%">%</button>
@@ -634,13 +607,11 @@
 
             // キーの押下アニメーションをトリガー
             button.classList.add('active');
+            // トランジションがないため、タイマーで即座に解除
             setTimeout(function() {
                 button.classList.remove('active');
-            }, 100); 
+            }, 50); 
             
-            // Tone.jsを削除したため、サウンド再生は行わない
-            // playSound(noteToPlay);
-
             switch (type) {
                 case 'number':
                     inputDigit(value);
@@ -661,7 +632,6 @@
         });
 
         // 2. スワイプイベント (一文字削除)
-        // touchmoveでのpreventDefault()はiOS 6でスクロール防止に有効なため残す
         var touchstartX = 0;
         var touchendX = 0;
         var SWIPE_THRESHOLD = 50; 
@@ -673,7 +643,7 @@
                 return;
             }
             touchstartX = e.changedTouches[0].screenX;
-        }, false); // { passive: false } の代わりに false を使用
+        }, false); 
 
         swipeArea.addEventListener('touchend', function(e) {
             // ズーム防止のために2本指以上の操作を無視する
@@ -693,9 +663,8 @@
         }, false);
 
         document.body.addEventListener('touchmove', function(e) {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
+            // スクロールを防ぎ、タッチ抜けを減らす
+            e.preventDefault();
         }, false);
 
 
