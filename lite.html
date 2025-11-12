@@ -5,7 +5,7 @@
     
     <!-- ズーム防止対策を維持 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電卓 (互換性重視)</title>
+    <title>電卓 (パフォーマンス優先)</title>
     
     <!-- PWA / iOSホーム画面への追加設定は残す -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,11 +16,11 @@
     <link rel="icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png">
 
-    <!-- パフォーマンス優先のスタイルに簡素化 -->
+    <!-- パフォーマンスを極限まで優先したスタイルに簡素化（影・アニメーション完全削除） -->
     <style>
         /* --- 固定カラーコード定義 (単色でパフォーマンス優先) --- */
         /* Display */
-        .display-bg { background-color: #c0cfa8; } /* グラデーションを単色に */
+        .display-bg { background-color: #c0cfa8; } 
         .calculator-bg { background-color: #404040; }
         /* Dark Keys */
         .dark-key-color { background-color: #4a4a4a; }
@@ -29,7 +29,7 @@
         .light-key-color { background-color: #7a7a7a; }
         .light-key-border { border-color: #444444; }
         /* AC/C Key (赤) */
-        .red-key-color { background-color: #c95d5d; } /* 明るい赤 */
+        .red-key-color { background-color: #c95d5d; } 
         .red-key-border { border-color: #923a3a; }
         /* Operator Keys (÷, ×, -, +) */
         .op-key-color { background-color: #a47047; }
@@ -46,6 +46,10 @@
         /* --- 基本レイアウトと互換性のための修正 --- */
 
         body {
+            /* スクロールを厳格に禁止し、タッチ抜けを減らす */
+            overflow: hidden; 
+            -webkit-overflow-scrolling: touch; 
+
             font-family: Helvetica, Arial, sans-serif; 
             background: #e0e0e0; 
             min-height: 100vh;
@@ -57,14 +61,13 @@
             box-sizing: border-box; 
             user-select: none; 
             -webkit-user-select: none; 
-            overflow: hidden; 
         }
 
         #calculator {
             background-color: #404040;
             border-radius: 20px; 
-            /* シャドウを簡素化 */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5); 
+            /* 影を完全に削除 */
+            box-shadow: none; 
             padding: 20px; 
             border: 1px solid rgba(0, 0, 0, 0.3);
             width: 100%; 
@@ -76,12 +79,11 @@
 
         #swipe-area {
             border-radius: 8px; 
-            /* グラデーションを単色に */
             background-color: #c0cfa8; 
             padding: 15px 10px;
             margin-bottom: 20px; 
-            /* シャドウを簡素化 */
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3); 
+            /* 影を完全に削除 */
+            box-shadow: none; 
             border: 1px solid rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden; 
@@ -102,14 +104,15 @@
             display: block; 
             font-family: monospace; 
             font-weight: 300; 
-            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4); 
+            /* 影を完全に削除 */
+            text-shadow: none; 
             text-align: right; 
             height: 4em; 
             overflow: hidden; 
             line-height: 4em; 
         }
 
-        /* --- ボタン共通スタイル (従来のブロックモデル) --- */
+        /* --- ボタン共通スタイル (レンダリング負荷軽減) --- */
         .calculator-grid {
             display: block; 
             width: 100%;
@@ -129,12 +132,13 @@
             font-size: 1.5em;
             font-weight: 500;
             color: #ffffff; 
-            text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6); 
+            /* 影を完全に削除 */
+            text-shadow: none; 
             
-            /* シャドウを極限まで簡素化 */
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);         
+            /* 影を完全に削除 */
+            box-shadow: none;         
             border: 1px solid; 
-            /* トランジションを削除して反応速度を最速化 */
+            /* トランジションを完全に削除 */
             -webkit-transition: none; 
             transition: none; 
             position: relative; 
@@ -150,14 +154,19 @@
         /* 5列目の0キー前のクリア */
         .key[data-value="0"] { clear: left; }
         
+        /* 押下時のフィードバックを簡素化 */
         .key:active {
-            /* 押下時のシャドウも簡素化 */
-            box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.4); 
-            -webkit-transform: translateY(1px); 
-            transform: translateY(1px); 
+            /* 影を完全に削除 */
+            box-shadow: none; 
+            /* transformを削除して計算負荷を削減 */
+            -webkit-transform: none; 
+            transform: none; 
+            /* 押下時は暗い色を適用 */
+            background-color: rgba(0, 0, 0, 0.2) !important; 
+            border-color: rgba(0, 0, 0, 0.4) !important;
         }
         
-        /* --- キーの背景色設定 (単色と簡素化されたボーダー) --- */
+        /* --- キーの背景色設定 (単色) --- */
         
         /* Dark Keys (Number and .) */
         .key[data-type="number"] {
@@ -170,7 +179,9 @@
             background-color: #7a7a7a;
             border-color: #444444;
             color: #000000; 
-            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4); 
+        }
+        .key.light-key:active {
+            background-color: #5a5a5a !important;
         }
         
         /* AC/C (赤色キー) */
@@ -178,7 +189,9 @@
             background-color: #c95d5d;
             border-color: #923a3a;
             color: #ffffff; 
-            text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6);
+        }
+        .key.red-key:active {
+            background-color: #a44d4d !important;
         }
 
         /* Operator Keys */
@@ -186,11 +199,17 @@
             background-color: #a47047;
             border-color: #5a3c21;
         }
+        .key.op-key:active {
+            background-color: #8b5f3a !important;
+        }
 
         /* Equals Key */
         .key.equals-key {
             background-color: #cc6d00;
             border-color: #803b00;
+        }
+        .key.equals-key:active {
+            background-color: #a35600 !important;
         }
         
         /* Zero Key - 2列幅の代替 */
@@ -202,7 +221,6 @@
 
         #current-value-span.error-text {
             color: #8b0000; 
-            text-shadow: none;
         }
 
         /* 画面サイズが小さい場合の調整 */
@@ -233,7 +251,6 @@
     <div id="calculator">
         
         <!-- ディスプレイ部分 (スワイプエリアを含む) -->
-        <!-- display-bg-start/end を display-bg に変更 -->
         <div id="swipe-area" class="display-bg"> 
             <div id="previous-operation" class="text-dark"></div>
             <div id="current-display" class="text-dark">
@@ -313,6 +330,7 @@
         };
         
         // ディスプレイのフォントサイズを調整 (emを使用)
+        // DOM操作がパフォーマンスのボトルネックになり得るため、この関数は極力軽量化します
         function adjustFontSize(value) {
             var length = value.replace(/[-.]/g, '').length; 
             var fontSize;
@@ -607,10 +625,10 @@
 
             // キーの押下アニメーションをトリガー
             button.classList.add('active');
-            // トランジションがないため、タイマーで即座に解除
+            // タイマーを10msに短縮し、次の処理へすぐに移るようにする
             setTimeout(function() {
                 button.classList.remove('active');
-            }, 50); 
+            }, 10); 
             
             switch (type) {
                 case 'number':
@@ -637,7 +655,6 @@
         var SWIPE_THRESHOLD = 50; 
 
         swipeArea.addEventListener('touchstart', function(e) {
-            // ズーム防止のために2本指以上の操作を無視する
             if (e.touches.length > 1) {
                 e.preventDefault(); 
                 return;
@@ -646,7 +663,6 @@
         }, false); 
 
         swipeArea.addEventListener('touchend', function(e) {
-            // ズーム防止のために2本指以上の操作を無視する
             if (e.changedTouches.length > 1) {
                 e.preventDefault();
                 return;
@@ -655,7 +671,7 @@
             handleGesture();
         }, false);
         
-        // 全体でのタッチ操作によるズーム防止
+        // 全体でのタッチ操作によるズーム防止（タッチ抜け軽減）
         document.body.addEventListener('touchstart', function(e) {
             if (e.touches.length > 1) {
                 e.preventDefault();
@@ -663,7 +679,7 @@
         }, false);
 
         document.body.addEventListener('touchmove', function(e) {
-            // スクロールを防ぎ、タッチ抜けを減らす
+            // スクロールを防ぎ、タッチ抜けを減らすため、常にpreventDefault()を呼び出す
             e.preventDefault();
         }, false);
 
@@ -677,7 +693,7 @@
             }
         }
 
-        // 3. キーボードイベント (PC操作) - 旧ブラウザで安全な構文で残す
+        // 3. キーボードイベント (PC操作) 
         document.addEventListener('keydown', function(e) {
             if (calculatorState.isError) {
                 if (e.key === 'Escape' || e.key === 'Delete' || e.keyCode === 27 || e.keyCode === 46) {
