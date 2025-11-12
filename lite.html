@@ -148,8 +148,8 @@
         .key[data-value="0"] { clear: left; }
         
         /* 押下時のフィードバックを簡素化 (色を変えるだけ) */
-        .key:active {
-            /* transform/shadow/borderを完全に削除済み。背景色のみ変更 */
+        /* JSでactiveクラスを設定する方式に変更し、CSSの:activeは非推奨に */
+        .key.active {
             background-color: rgba(0, 0, 0, 0.2) !important; 
         }
         
@@ -166,26 +166,26 @@
             background-color: #7a7a7a;
             color: #000000; 
         }
-        .key.light-key:active { background-color: #5a5a5a !important; }
+        .key.light-key.active { background-color: #5a5a5a !important; }
         
         /* AC/C (赤色キー) */
         .key.red-key {
             background-color: #c95d5d;
             color: #ffffff; 
         }
-        .key.red-key:active { background-color: #a44d4d !important; }
+        .key.red-key.active { background-color: #a44d4d !important; }
 
         /* Operator Keys */
         .key.op-key {
             background-color: #a47047;
         }
-        .key.op-key:active { background-color: #8b5f3a !important; }
+        .key.op-key.active { background-color: #8b5f3a !important; }
 
         /* Equals Key */
         .key.equals-key {
             background-color: #cc6d00;
         }
-        .key.equals-key:active { background-color: #a35600 !important; }
+        .key.equals-key.active { background-color: #a35600 !important; }
         
         /* Zero Key - 2列幅の代替 */
         .key[data-value="0"] {
@@ -350,7 +350,7 @@
                 currentValueSpan.textContent = 'エラー';
                 currentValueSpan.style.fontSize = '2em'; 
                 if (currentClassName.indexOf('error-text') === -1) {
-                    currentValueSpan.className = 'error-text text-red'; 
+                    currentValueSpan.className = 'error-text text-dark'; // text-redからtext-darkに修正
                 }
                 previousOperation.textContent = '';
                 clearKey.textContent = 'AC'; 
@@ -577,25 +577,14 @@
         }
 
         // --- イベントリスナー ---
-
-        // 1. ボタンクリックイベント
-        // イベントリスナーの数を減らすため、親要素に委任 (バブリングを利用)
-        calculator.addEventListener('click', function(event) {
-            var button = event.target;
-            if (button.tagName !== 'BUTTON') return;
-
+        
+        // 計算ロジックを実行する共通関数
+        function executeAction(button) {
             var type = button.getAttribute('data-type');
             var value = button.getAttribute('data-value');
 
             if (!type) return;
 
-            // キーの押下アニメーションをトリガー
-            button.classList.add('active');
-            // タイマーを10msに短縮し、次の処理へすぐに移るようにする
-            setTimeout(function() {
-                button.classList.remove('active');
-            }, 10); 
-            
             switch (type) {
                 case 'number':
                     inputDigit(value);
@@ -613,6 +602,48 @@
                     changeSign();
                     break;
             }
+        }
+
+        // 1. (高速化の核心) モバイルでの高速応答のためのタッチイベント
+        // clickイベントの300ms遅延を回避するためにtouchstartを使用
+        calculator.addEventListener('touchstart', function(event) {
+            var button = event.target;
+            if (button.tagName !== 'BUTTON') return;
+
+            // ブラウザの遅延クリックイベントを抑制し、意図しないスクロールを防止
+            event.preventDefault(); 
+
+            // 視覚的フィードバックを即座に開始
+            button.classList.add('active');
+            
+            // 計算ロジックを即座に実行
+            executeAction(button);
+
+            // 視覚的フィードバックを非常に短い時間(50ms)で終了させる
+            setTimeout(function() {
+                button.classList.remove('active');
+            }, 50); 
+            
+            // touchstartでロジックが実行されたため、これ以上の処理は不要
+        });
+
+        // 2. PCマウス操作のためのフォールバック (clickイベント)
+        calculator.addEventListener('click', function(event) {
+            var button = event.target;
+            if (button.tagName !== 'BUTTON') return;
+
+            // touchstartでpreventDefault()が呼ばれているため、モバイルではclickは発生しないか、
+            // 発生してもevent.detailが0になることが多い。二重実行を防ぐためにチェックする。
+            if (event.detail === 0) { 
+                 return; 
+            }
+
+            // PC操作のための視覚的フィードバックとロジック実行
+            button.classList.add('active');
+            executeAction(button);
+            setTimeout(function() {
+                button.classList.remove('active');
+            }, 50); 
         });
 
         // 2. スワイプイベント (一文字削除)
@@ -645,8 +676,7 @@
         }, false);
 
         // iPad 2のような古いデバイスでクリックイベントの取りこぼしを防ぐため、
-        // document.bodyのtouchmoveに対するpreventDefault()を削除しました。
-        // これにより、ブラウザがタッチ操作からclickイベントを生成しやすくなります。
+        // document.bodyのtouchmoveに対するpreventDefault()は削除済みです。
 
         function handleGesture() {
             var deltaX = touchendX - touchstartX;
