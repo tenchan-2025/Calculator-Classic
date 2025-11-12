@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     
-    <!-- ズーム防止対策を維持 -->
+    <!-- ズーム防止対策とタッチ抜け対策を維持 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電卓 (パフォーマンス優先)</title>
+    <title>電卓 (超軽量版)</title>
     
     <!-- PWA / iOSホーム画面への追加設定は残す -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,32 +16,20 @@
     <link rel="icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png">
 
-    <!-- パフォーマンスを極限まで優先したスタイルに簡素化（影・アニメーション完全削除） -->
+    <!-- 描画負荷を極限まで削減したスタイル (角丸・境界線なし) -->
     <style>
-        /* --- 固定カラーコード定義 (単色でパフォーマンス優先) --- */
-        /* Display */
+        /* --- 固定カラーコード定義 --- */
         .display-bg { background-color: #c0cfa8; } 
         .calculator-bg { background-color: #404040; }
-        /* Dark Keys */
         .dark-key-color { background-color: #4a4a4a; }
-        .dark-key-border { border-color: #222222; }
-        /* Light Keys (+/-, %) */
         .light-key-color { background-color: #7a7a7a; }
-        .light-key-border { border-color: #444444; }
-        /* AC/C Key (赤) */
         .red-key-color { background-color: #c95d5d; } 
-        .red-key-border { border-color: #923a3a; }
-        /* Operator Keys (÷, ×, -, +) */
         .op-key-color { background-color: #a47047; }
-        .op-key-border { border-color: #5a3c21; }
-        /* Equals Key */
         .equals-key-color { background-color: #cc6d00; }
-        .equals-key-border { border-color: #803b00; }
         
         /* Text Colors */
-        .text-light { color: #ffffff; }
         .text-dark { color: #000000; }
-        .text-red { color: #8b0000; }
+        .text-light { color: #ffffff; }
 
         /* --- 基本レイアウトと互換性のための修正 --- */
 
@@ -65,11 +53,13 @@
 
         #calculator {
             background-color: #404040;
-            border-radius: 20px; 
+            /* 角丸を完全に削除 */
+            border-radius: 0px; 
             /* 影を完全に削除 */
             box-shadow: none; 
             padding: 20px; 
-            border: 1px solid rgba(0, 0, 0, 0.3);
+            /* 境界線を完全に削除 */
+            border: none;
             width: 100%; 
             max-width: 350px; 
             margin: 0 auto; 
@@ -78,13 +68,14 @@
         }
 
         #swipe-area {
-            border-radius: 8px; 
+            /* 角丸を完全に削除 */
+            border-radius: 0px; 
             background-color: #c0cfa8; 
             padding: 15px 10px;
             margin-bottom: 20px; 
-            /* 影を完全に削除 */
+            /* 影と境界線を完全に削除 */
             box-shadow: none; 
-            border: 1px solid rgba(0, 0, 0, 0.2);
+            border: none;
             position: relative;
             overflow: hidden; 
             cursor: pointer; 
@@ -112,7 +103,7 @@
             line-height: 4em; 
         }
 
-        /* --- ボタン共通スタイル (レンダリング負荷軽減) --- */
+        /* --- ボタン共通スタイル (究極の簡素化) --- */
         .calculator-grid {
             display: block; 
             width: 100%;
@@ -126,21 +117,23 @@
             margin: 6px; 
             display: block; 
             
-            border-radius: 12px; 
+            /* 角丸を完全に削除 */
+            border-radius: 0px; 
             text-align: center;
             line-height: 70px; 
             font-size: 1.5em;
             font-weight: 500;
             color: #ffffff; 
-            /* 影を完全に削除 */
-            text-shadow: none; 
             
-            /* 影を完全に削除 */
+            /* 影と境界線を完全に削除 */
             box-shadow: none;         
-            border: 1px solid; 
-            /* トランジションを完全に削除 */
+            border: none; 
+            
+            /* トランジションと変換を削除 */
             -webkit-transition: none; 
             transition: none; 
+            -webkit-transform: none;
+            transform: none; 
             position: relative; 
             cursor: pointer;
             -webkit-user-select: none;
@@ -154,16 +147,10 @@
         /* 5列目の0キー前のクリア */
         .key[data-value="0"] { clear: left; }
         
-        /* 押下時のフィードバックを簡素化 */
+        /* 押下時のフィードバックを簡素化 (色を変えるだけ) */
         .key:active {
-            /* 影を完全に削除 */
-            box-shadow: none; 
-            /* transformを削除して計算負荷を削減 */
-            -webkit-transform: none; 
-            transform: none; 
-            /* 押下時は暗い色を適用 */
+            /* transform/shadow/borderを完全に削除済み。背景色のみ変更 */
             background-color: rgba(0, 0, 0, 0.2) !important; 
-            border-color: rgba(0, 0, 0, 0.4) !important;
         }
         
         /* --- キーの背景色設定 (単色) --- */
@@ -171,46 +158,34 @@
         /* Dark Keys (Number and .) */
         .key[data-type="number"] {
             background-color: #4a4a4a;
-            border-color: #222222;
+            color: #ffffff;
         }
 
         /* Light Keys (+/-, %) */
         .key.light-key {
             background-color: #7a7a7a;
-            border-color: #444444;
             color: #000000; 
         }
-        .key.light-key:active {
-            background-color: #5a5a5a !important;
-        }
+        .key.light-key:active { background-color: #5a5a5a !important; }
         
         /* AC/C (赤色キー) */
         .key.red-key {
             background-color: #c95d5d;
-            border-color: #923a3a;
             color: #ffffff; 
         }
-        .key.red-key:active {
-            background-color: #a44d4d !important;
-        }
+        .key.red-key:active { background-color: #a44d4d !important; }
 
         /* Operator Keys */
         .key.op-key {
             background-color: #a47047;
-            border-color: #5a3c21;
         }
-        .key.op-key:active {
-            background-color: #8b5f3a !important;
-        }
+        .key.op-key:active { background-color: #8b5f3a !important; }
 
         /* Equals Key */
         .key.equals-key {
             background-color: #cc6d00;
-            border-color: #803b00;
         }
-        .key.equals-key:active {
-            background-color: #a35600 !important;
-        }
+        .key.equals-key:active { background-color: #a35600 !important; }
         
         /* Zero Key - 2列幅の代替 */
         .key[data-value="0"] {
@@ -330,10 +305,10 @@
         };
         
         // ディスプレイのフォントサイズを調整 (emを使用)
-        // DOM操作がパフォーマンスのボトルネックになり得るため、この関数は極力軽量化します
         function adjustFontSize(value) {
             var length = value.replace(/[-.]/g, '').length; 
             var fontSize;
+            // フォントサイズ調整の計算負荷は低いため維持
             if (length > 13) {
                 fontSize = '1.5em'; 
             } else if (length > 10) {
@@ -367,16 +342,25 @@
 
         // ディスプレイを更新
         function updateDisplay() {
-            if (calculatorState.isError) {
+            // パフォーマンスのため、classNameの変更を必要最小限に抑える
+            var isError = calculatorState.isError;
+            var currentClassName = currentValueSpan.className;
+
+            if (isError) {
                 currentValueSpan.textContent = 'エラー';
                 currentValueSpan.style.fontSize = '2em'; 
-                currentValueSpan.className = 'error-text text-red'; 
+                if (currentClassName.indexOf('error-text') === -1) {
+                    currentValueSpan.className = 'error-text text-red'; 
+                }
                 previousOperation.textContent = '';
                 clearKey.textContent = 'AC'; 
                 return;
             } else {
-                currentValueSpan.className = ''; 
-                currentValueSpan.classList.add('text-dark');
+                if (currentClassName.indexOf('error-text') !== -1) {
+                     currentValueSpan.className = 'text-dark'; 
+                } else if (currentClassName === '') {
+                    currentValueSpan.classList.add('text-dark');
+                }
             }
 
             var displayValue = formatNumberForDisplay(calculatorState.currentValue);
@@ -385,7 +369,6 @@
 
             if (calculatorState.previousValue !== null && calculatorState.operation !== null) {
                 var opSymbol = operationMap[calculatorState.operation] || calculatorState.operation;
-                // previousValueのフォーマットは、toLocaleStringを避け、単純な表示に
                 var prevFormatted = String(calculatorState.previousValue);
                 previousOperation.textContent = prevFormatted + ' ' + opSymbol;
             } else {
@@ -405,14 +388,11 @@
             if (calculatorState.isError) return;
 
             if (calculatorState.waitingForNewValue) {
-                // 新しい値の入力を開始
                 calculatorState.currentValue = (digit === '.') ? '0.' : digit;
                 calculatorState.waitingForNewValue = false;
-                // 最後の計算情報をクリア
                 calculatorState.lastValue = null;
                 calculatorState.lastOperation = null;
             } else {
-                // 桁数制限 (小数点とマイナスを除いて15桁を上限とする)
                 if (calculatorState.currentValue.replace(/[-.]/g, '').length >= 15 && digit !== '.') {
                     return; 
                 }
@@ -436,14 +416,12 @@
 
             var inputValue = parseFloat(calculatorState.currentValue);
 
-            // 最後の計算情報をクリア
             calculatorState.lastValue = null;
             calculatorState.lastOperation = null;
 
             if (calculatorState.previousValue === null) {
                 calculatorState.previousValue = inputValue;
             } else if (!calculatorState.waitingForNewValue) {
-                // 既存の計算を実行
                 var result = calculate(calculatorState.previousValue, inputValue, calculatorState.operation);
 
                 if (result === 'ERROR') {
@@ -452,7 +430,6 @@
                     return;
                 }
                 
-                // 結果を現在の値と前の値に設定
                 calculatorState.currentValue = String(result);
                 calculatorState.previousValue = result;
             }
@@ -469,22 +446,17 @@
             var prevValue, op;
 
             if (calculatorState.previousValue === null) {
-                // 連続イコールの最初の実行、または直前の計算結果がない場合
-                if (calculatorState.lastValue === null) return; // 処理できる情報がない
+                if (calculatorState.lastValue === null) return; 
 
-                // lastValueとlastOperationを使用
                 prevValue = parseFloat(calculatorState.currentValue);
                 op = calculatorState.lastOperation;
             } else {
-                // 通常の = 実行
                 prevValue = calculatorState.previousValue;
                 op = calculatorState.operation;
                 
-                // 連続イコール処理のために、現在の値と操作を保存
                 calculatorState.lastValue = parseFloat(calculatorState.currentValue);
                 calculatorState.lastOperation = op;
                 
-                // 状態をリセット (previousValueとoperationはnull)
                 calculatorState.previousValue = null;
                 calculatorState.operation = null;
             }
@@ -497,7 +469,6 @@
             if (result === 'ERROR') {
                 calculatorState.isError = true;
             } else {
-                // 結果を表示値に設定
                 calculatorState.currentValue = String(result);
             }
             calculatorState.waitingForNewValue = true;
@@ -506,7 +477,6 @@
 
         // 実際の計算ロジック
         function calculate(prev, current, operation) {
-            // 浮動小数点誤差を防ぐための精度調整 (10^10)
             var precision = 10000000000; 
             prev = Math.round(prev * precision) / precision;
             current = Math.round(current * precision) / precision;
@@ -523,28 +493,26 @@
                     result = prev * current;
                     break;
                 case '/':
-                    if (current === 0) return 'ERROR'; // ゼロ除算エラー
+                    if (current === 0) return 'ERROR'; 
                     result = prev / current;
                     break;
                 case '%':
-                    // %キーの動作を、prev * (current / 100)として処理（元の実装に従う）
                     result = prev * (current / 100);
                     break;
                 default:
                     return current;
             }
-            // 誤差を修正して返す
             return Math.round(result * precision) / precision;
         }
         
         // クリアボタン (AC/C) の処理
         function clear() {
             if (calculatorState.isError) {
-                fullClear(); // エラー時はACと同じ
+                fullClear(); 
             } else if (clearKey.textContent === 'C') {
-                currentClear(); // Cの場合は現在の入力だけクリア
+                currentClear(); 
             } else {
-                fullClear(); // ACの場合は全てクリア
+                fullClear(); 
             }
             updateDisplay();
         }
@@ -591,7 +559,6 @@
             if (current.length > 1 && current !== '0') {
                 var newCurrent = current.slice(0, -1);
                 
-                // 削除後がマイナス記号単体やピリオド単体になったら'0'に戻す
                 if (newCurrent === '-' || newCurrent === '.') {
                     calculatorState.currentValue = '0';
                     calculatorState.waitingForNewValue = true;
@@ -599,12 +566,10 @@
                     calculatorState.currentValue = newCurrent;
                 }
             } else if (current.length === 1 && current !== '0') {
-                // 1桁だった場合は'0'に戻す
                 calculatorState.currentValue = '0';
                 calculatorState.waitingForNewValue = true;
             }
             
-            // 最後の計算情報をクリア
             calculatorState.lastValue = null;
             calculatorState.lastOperation = null;
 
@@ -614,6 +579,7 @@
         // --- イベントリスナー ---
 
         // 1. ボタンクリックイベント
+        // イベントリスナーの数を減らすため、親要素に委任 (バブリングを利用)
         calculator.addEventListener('click', function(event) {
             var button = event.target;
             if (button.tagName !== 'BUTTON') return;
@@ -705,7 +671,6 @@
             var key = e.key || String.fromCharCode(e.keyCode); // e.keyがない場合の対応
             
             if (key >= '0' && key <= '9' || e.keyCode >= 48 && e.keyCode <= 57 || e.keyCode >= 96 && e.keyCode <= 105) {
-                // 数字キー
                 var digit = key >= '0' && key <= '9' ? key : String.fromCharCode(e.keyCode - 48);
                 if (key === '0' || e.keyCode === 96) digit = '0';
                 inputDigit(digit);
@@ -713,7 +678,6 @@
                 inputDigit('.');
             } 
             else if (['+', '-', '*', '/'].indexOf(key) !== -1 || e.keyCode === 107 || e.keyCode === 109 || e.keyCode === 106 || e.keyCode === 111) {
-                // 演算子キー
                 var op = key;
                 if (e.keyCode === 107) op = '+';
                 if (e.keyCode === 109) op = '-';
