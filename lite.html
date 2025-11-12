@@ -195,6 +195,15 @@
             color: #000000; 
             text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4); 
         }
+        
+        /* --- AC/C (赤色キー) の追加定義 --- */
+        .key.red-key {
+            background: -webkit-linear-gradient(top, #e47272 0%, #bd4f4f 100%);
+            background: linear-gradient(180deg, #e47272 0%, #bd4f4f 100%);
+            border-color: #923a3a;
+            color: #ffffff; 
+            text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.6);
+        }
 
         /* Operator Keys */
         .key.op-key {
@@ -263,7 +272,8 @@
         <div class="calculator-grid">
             
             <!-- 1列目: AC, +/-, %, ÷ -->
-            <button id="clear-key" class="key light-key" data-type="clear">AC</button>
+            <!-- light-key から red-key に変更 -->
+            <button id="clear-key" class="key red-key" data-type="clear">AC</button>
             <button class="key light-key" data-type="sign">+/-</button>
             <button class="key light-key" data-type="operator" data-value="%">%</button>
             <button class="key op-key" data-type="operator" data-value="/">÷</button>
