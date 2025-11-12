@@ -12,14 +12,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="電卓">
 
-    <!-- ========== 【ここからPWA/Android対応を追加】 ========== -->
-    <!-- 1. Web App Manifestのリンク -->
+    <!-- PWA/Android対応 -->
     <link rel="manifest" href="/manifest.json">
-    <!-- 2. Android Chromeで独立したアプリとして実行するための設定 -->
     <meta name="mobile-web-app-capable" content="yes">
-    <!-- ========== 【ここまでPWA/Android対応を追加】 ========== -->
     
-    <!-- アイコン設定 (複数のサイズを指定することがPWAでは推奨されますが、ここでは単一のURLを使用) -->
+    <!-- アイコン設定 -->
     <link rel="icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/tenchan-2025/Calculator-Classic/refs/heads/main/icon.png">
     
@@ -258,110 +255,10 @@
                 padding-left: 20px;
             }
         }
-        
-        /* --- モーダル (ポップアップ) スタイル --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-
-        .modal-overlay.open {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background: #ffffff;
-            color: var(--text-dark);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-            max-width: 80vw;
-            width: 350px;
-            transform: scale(0.9);
-            transition: transform 0.3s ease-out;
-            text-align: center;
-        }
-
-        .modal-overlay.open .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-content h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 25px;
-        }
-
-        .modal-button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            min-width: 100px;
-            touch-action: manipulation;
-        }
-
-        .modal-button:active {
-            transform: scale(0.98);
-        }
-
-        #allow-sound {
-            background-color: var(--accent-color);
-            color: white;
-        }
-        #allow-sound:hover {
-            background-color: #2563eb;
-        }
-
-        #deny-sound {
-            background-color: #e5e7eb;
-            color: var(--text-dark);
-        }
-        #deny-sound:hover {
-            background-color: #d1d5db;
-        }
     </style>
 </head>
 <body>
     
-    <!-- サウンド設定モーダル -->
-    <div id="sound-modal" class="modal-overlay open">
-        <div class="modal-content">
-            <h2>サウンドを有効にしますか？</h2>
-            <p>ボタンを押したときに、フィードバックとしてクリック音を鳴らします。</p>
-            <div class="modal-buttons">
-                <!-- サウンド無効ボタン -->
-                <button id="deny-sound" class="modal-button">無効にする</button>
-                <!-- サウンド有効ボタン -->
-                <button id="allow-sound" class="modal-button">有効にする</button>
-            </div>
-        </div>
-    </div>
-
     <div id="calculator">
         
         <!-- サウンド設定ボタン -->
@@ -428,10 +325,7 @@
         const zeroKey = document.querySelector('.key[data-type="number"][data-value="0"]'); 
         const soundSettingButton = document.getElementById('sound-setting-button');
         const speakerIcon = document.getElementById('speaker-icon');
-        const soundModal = document.getElementById('sound-modal');
-        const allowSoundButton = document.getElementById('allow-sound'); 
-        const denySoundButton = document.getElementById('deny-sound');   
-
+        
         // 0キーのテキストを設定
         if (zeroKey) {
             zeroKey.textContent = '0';
@@ -488,7 +382,7 @@
         // --- Tone.js サウンド設定 終わり ---
 
 
-        // --- サウンド設定とモーダルロジック ---
+        // --- サウンド設定ロジック ---
         function setSoundEnabled(enable) {
             isSoundEnabled = enable;
             updateSpeakerIcon();
@@ -500,20 +394,8 @@
                 `<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">${speakerOffPath}</svg>`;
         }
 
-        allowSoundButton.addEventListener('click', () => {
-            setSoundEnabled(true);
-            soundModal.classList.remove('open');
-            if (Tone.context.state !== 'running') {
-                Tone.start();
-            }
-        });
-
-        denySoundButton.addEventListener('click', () => {
-            setSoundEnabled(false);
-            soundModal.classList.remove('open');
-        });
-
         soundSettingButton.addEventListener('click', () => {
+            // 音声コンテキストの開始（ユーザーのジェスチャーによる）
             if (!isSoundEnabled) {
                 if (Tone.context.state !== 'running') {
                     Tone.start();
@@ -524,6 +406,7 @@
 
         // --- 電卓ロジック ---
 
+        // 初期状態を定義（localStorageからの読み込みは行わない）
         let calculatorState = {
             currentValue: '0',        
             previousValue: null,      
@@ -539,7 +422,7 @@
             '/': '÷',
             '%': '%',
         };
-
+        
         function adjustFontSize(value) {
             const length = value.replace(/[-.]/g, '').length; 
             let fontSize;
@@ -584,6 +467,7 @@
 
             if (calculatorState.previousValue !== null && calculatorState.operation !== null) {
                 const opSymbol = operationMap[calculatorState.operation] || calculatorState.operation;
+                // previousValueは数値として保存されている可能性があるため、表示用にフォーマット
                 const prevFormatted = parseFloat(calculatorState.previousValue).toLocaleString('ja-JP', {
                     maximumFractionDigits: 10 
                 });
@@ -899,7 +783,7 @@
             }
         });
 
-        // 4. 初期表示の更新とモーダル表示 (ロード時に必ず表示)
+        // 4. 初期表示の更新
         window.onload = () => {
             updateDisplay();
             updateSpeakerIcon(); 
