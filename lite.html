@@ -644,11 +644,9 @@
             }
         }, false);
 
-        document.body.addEventListener('touchmove', function(e) {
-            // スクロールを防ぎ、タッチ抜けを減らすため、常にpreventDefault()を呼び出す
-            e.preventDefault();
-        }, false);
-
+        // iPad 2のような古いデバイスでクリックイベントの取りこぼしを防ぐため、
+        // document.bodyのtouchmoveに対するpreventDefault()を削除しました。
+        // これにより、ブラウザがタッチ操作からclickイベントを生成しやすくなります。
 
         function handleGesture() {
             var deltaX = touchendX - touchstartX;
