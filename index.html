@@ -36,6 +36,7 @@
             --default-light-key-start: #919191; 
             --default-light-key-end: #616161;   
             --default-light-key-border: #444444; 
+            /* ACキー用の赤色を維持 */
             --clear-key-start: #ff6347; 
             --clear-key-end: #cc4c39;   
             --clear-key-border: #993a2b; 
@@ -210,7 +211,14 @@
             padding-left: 25px; 
             margin: 0; 
         }
+        
+        /* ACキー (赤色) のスタイルを再定義 */
+        .key.clear-key-color {
+            background: linear-gradient(180deg, var(--clear-key-start) 0%, var(--clear-key-end) 100%);
+            border-color: var(--clear-key-border);
+        }
 
+        /* +/- と % キー (灰色/light-key) のスタイル */
         .key.light-key {
             background: linear-gradient(180deg, var(--default-light-key-start) 0%, var(--default-light-key-end) 100%);
             border-color: var(--default-light-key-border);
@@ -282,8 +290,8 @@
         <!-- ボタングリッド -->
         <div class="calculator-grid">
             
-            <!-- 1列目: AC, +/-, %, ÷ -->
-            <button id="clear-key" class="key light-key" data-type="clear">AC</button>
+            <!-- 1列目: AC (clear-key-color), +/-, %, ÷ -->
+            <button id="clear-key" class="key clear-key-color" data-type="clear">AC</button>
             <button class="key light-key" data-type="sign">+/-</button>
             <button class="key light-key" data-type="operator" data-value="%">%</button>
             <button class="key op-key" data-type="operator" data-value="/">÷</button>
